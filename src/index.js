@@ -21,22 +21,16 @@ class Calculator extends React.Component{
     if (numbers[counter] === undefined) {
 
       // if no previous input is present, start input
-      numbers[counter] = {
-        onScreen : i.toLocaleString(),
-        onMemory : i
-      };
+      numbers[counter] = i;
 
-    } else if (numbers[counter].onScreen.length === 10) {
+    } else if (String(numbers[counter]).length === 8) {
 
       // if number is more than 10 places, stop input
       return;
 
     } else {
       
-      numbers[counter] = {
-        onScreen : parseInt(String(numbers[counter].onMemory) + i).toLocaleString(),
-        onMemory : parseInt(String(numbers[counter].onMemory) + i)
-      };
+      numbers[counter] = parseInt(String(numbers[counter]) + i);
 
     }
 
@@ -70,13 +64,43 @@ class Calculator extends React.Component{
           console.log(i);
           break;
         case 'c':
-          console.log(i);
+          if (numbers.length !== 0) {
+            numbers[counter] = 0;
+            this.setState({
+              numbers : numbers
+            })
+          }
           break;
         case 'ca':
-          console.log(i);
+          if (numbers.length !== 0) {
+            numbers[counter] = 0;
+            this.setState({
+              numbers : numbers
+            })
+          }
           break;
         case 'delete':
-          console.log(i);
+          // if input is already present
+          if (numbers.length !== 0) {
+
+            // if there's only one digit
+            if (String(numbers[counter]).length === 1) {
+              console.log('one digit');
+              numbers[counter] = 0;
+              this.setState({
+                numbers : numbers
+              });
+              break;
+            }
+            let strCopy = String(numbers[counter]);
+            let strLength = strCopy.length;
+            
+            numbers[counter] = parseInt(strCopy.substring(0, strLength - 1));
+            
+            this.setState({
+              numbers : numbers
+            });
+          }
           break;
         case '.':
           console.log(i);
@@ -153,7 +177,7 @@ class Calculator extends React.Component{
     if (undefined === this.state.numbers[counter]) {
       onScreen = 0;
     } else {
-      onScreen = this.state.numbers[counter].onScreen;
+      onScreen = this.state.numbers[counter].toLocaleString();
     }
     return (
       <Screen 
