@@ -9,16 +9,25 @@ class Calculator extends React.Component{
     super(props);
     this.state = {
       numbers : [],
-      next : false,
-      currentOperation : '',
-      counter : 0
+      operations : [],
+      counter : 0,
+      equals : false
     };
   }
 
   handleClick(i) {
     let numbers = this.state.numbers.slice();
     const counter = this.state.counter;
-    if (numbers[counter] === undefined) {
+    let equals = this.state.equals;
+
+    if (equals) {
+
+      numbers[counter] = i;
+      this.setState({
+        equals : false
+      })
+
+    } else if (numbers[counter] === undefined) {
 
       // if no previous input is present, start input
       numbers[counter] = i;
@@ -42,73 +51,164 @@ class Calculator extends React.Component{
   handleClickUtilities(i) {
     let numbers = this.state.numbers.slice();
     let counter = this.state.counter;
-    // work on operations such as division : consider pemdas
-    if (Object.values(this.utilities()).includes(i)) {
-      switch(i) {
-        case '+':
-          this.setState({
-            currentOperation : i
-          });
-          console.log(i);
-          break;
-        case '-':
-          console.log(i);
-          break;
-        case 'X':
-          console.log(i);
-          break;
-        case '/':
-          console.log(i);
-          break;
-        case '=':
-          console.log(i);
-          break;
-        case 'c':
-          if (numbers.length !== 0) {
-            numbers[counter] = 0;
-            this.setState({
-              numbers : numbers
-            })
-          }
-          break;
-        case 'ca':
-          if (numbers.length !== 0) {
-            numbers[counter] = 0;
-            this.setState({
-              numbers : numbers
-            })
-          }
-          break;
-        case 'delete':
-          // if input is already present
-          if (numbers.length !== 0) {
+    let operations = this.state.operations.slice();
+    switch(i) {
+      case '+':
+        this.basicUtilities(i, operations, counter);
+        break;
 
-            // if there's only one digit
-            if (String(numbers[counter]).length === 1) {
-              console.log('one digit');
-              numbers[counter] = 0;
-              this.setState({
-                numbers : numbers
-              });
-              break;
-            }
-            let strCopy = String(numbers[counter]);
-            let strLength = strCopy.length;
-            
-            numbers[counter] = parseInt(strCopy.substring(0, strLength - 1));
-            
+      case '-':
+
+        this.basicUtilities(i, operations, counter);
+        break;
+
+      case 'X':
+
+        this.basicUtilities(i, operations, counter);
+        break;
+
+      case '/':
+
+        this.basicUtilities(i, operations, counter);
+        break;
+
+      case '=':
+        
+        this.compute(numbers, operations, counter);
+        break;
+
+      case 'c':
+
+        //clear function
+        if (numbers.length !== 0) {
+          numbers[counter] = 0;
+          this.setState({
+            numbers : numbers
+          })
+        }
+
+        break;
+
+      case 'ca':
+
+      //clear all function
+        this.setState({
+          numbers : [],
+          counter : 0
+        })
+        numbers = [];
+        break;
+
+      case 'delete':
+
+        // if input is already present
+        if (numbers.length !== 0) {
+
+          // if there's only one digit
+          if (String(numbers[counter]).length === 1) {
+            numbers[counter] = 0;
             this.setState({
               numbers : numbers
             });
+            break;
           }
+
+          let strCopy = String(numbers[counter]);
+          let strLength = strCopy.length;
+          
+          numbers[counter] = parseInt(strCopy.substring(0, strLength - 1));
+          
+          this.setState({
+            numbers : numbers
+          });
+        }
+
+        break;
+
+      case '.':
+        console.log(i);
+        break;
+      case '-/+':
+        console.log(numbers[counter])
+        numbers[counter] *= -1;
+        this.setState({
+          numbers: numbers
+        })
+        break;
+      default:
+        break;
+    }
+  }
+
+  basicUtilities(i, operations, counter) {
+    if (operations[operations.length - 1] === i) {
+      return;
+    }
+    operations = operations.concat(i)
+    this.setState({
+      operations : operations,
+      counter : counter + 1
+    });
+  }
+
+  compute(numbers, operations, counter) {
+
+    if (numbers.length <= counter) {
+      return;
+    }
+
+    let current = numbers[0];
+    for (let x = 0; x < counter; x++) {
+      switch(operations[x]) {
+        case '+':
+
+          current += numbers[x + 1];
           break;
-        case '.':
-          console.log(i);
+
+        case '-':
+
+          current -= numbers[x + 1];
           break;
-        case '-/+':
-          console.log(i);
+
+        case 'X':
+
+          current *= numbers[x + 1];
           break;
+
+        case '/':
+
+          // divide by zero exception
+          if (numbers[x + 1] === 0) {
+            this.setState({
+              numbers : ["Error!"],
+              counter : 0,
+              equals : true,
+              operations : []
+            });
+
+            return;
+
+          }
+
+          current /= numbers[x + 1];
+          break;
+
+        default:
+          this.setState({
+            numbers : ["Err!"],
+            counter : 0,
+            equals : true,
+            operations : []
+          });
+          return;
       }
+
+      this.setState({
+        numbers : [current],
+        counter : 0,
+        operations : [],
+        equals : true
+      });
     }
   }
 
